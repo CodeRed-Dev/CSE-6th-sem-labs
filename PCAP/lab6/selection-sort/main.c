@@ -123,7 +123,7 @@ cl_command_queue cmdQueue;
 cmdQueue = clCreateCommandQueue(
 context,
 devices[0],
-0,
+CL_QUEUE_PROFILING_ENABLE,
 &status);
 printf("%d CQ success %d \n",status,numDevices); 
 
@@ -241,7 +241,8 @@ NULL,
 NULL);
 printf("ker exe %d \n",status);
 // STEP 12: Read the output buffer back to the host
-
+cl_event time_event;
+cl_ulong st,et,rt;
 // Use clEnqueueReadBuffer() to read the OpenCL output
 // buffer (bufferC)
 // to the host output array (C)
@@ -254,7 +255,7 @@ datasize,
 C,
 0,
 NULL,
-NULL);
+&time_event);
 printf("rb %d \n",status);
 printf("the o/p ELEMENTS  are\n");
 for(i=0;i<n;i++)
@@ -262,6 +263,11 @@ for(i=0;i<n;i++)
   printf("%d ",C[i]);
 }
 puts("");
+
+clGetEventProfilingInfo(time_event,CL_PROFILING_COMMAND_QUEUED,sizeof(st),&st,NULL);
+clGetEventProfilingInfo(time_event,CL_PROFILING_COMMAND_END,sizeof(et),&et,NULL);
+rt = (et-st);
+printf("the time taken is %lu nanosecs",rt);
 // STEP 13: Release OpenCL resources
 
 // Free OpenCL resources
@@ -277,4 +283,17 @@ clReleaseContext(context);
 free(platforms);
 free(devices);
 
+/*
+cmdQueue = clCreateCommandQueue(context,devices[0],CL_QUEUE_PROFILING_ENABLE,&status);
+print("%d CQ success",status,numDevices);
+cl_event time_event;
+cl_ulong starttime, endtime,readtime;
+clEnqueueReadBuffer(cmdQueue,bufferC,CL_TRUE,0,datasize2,C,0,NULL,&time_event);
+clGetEventProfilingInfo(time_event,CL_PROFILING_COMMAND_QUEUED,sizeof(starttime),&starttime,NULL);
+clGetEventProfilingInfo(time_event,CL_PROFILING_COMMAND_END,sizeof(endtime),&endtime,NULL);
+readtime = (endtime-starttime);
+printf("the time taken is %lu nanosecs",readtime);
+*/
 }
+
+
